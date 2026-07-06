@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reserva de Salas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Reserva de Salas de Reuniones</h1>
+  </header>
+
+  <main>
+    <section id="form-section">
+      <h2>Nueva reserva</h2>
+      <form id="reservation-form">
+        <label>
+          Sala:
+          <select id="room-select" required></select>
+        </label>
+        <label>
+          Título de la reunión:
+          <input type="text" id="title" required>
+        </label>
+        <label>
+          Tu nombre:
+          <input type="text" id="user-name" required>
+        </label>
+        <label>
+          Inicio:
+          <input type="datetime-local" id="start-time" required>
+        </label>
+        <label>
+          Fin:
+          <input type="datetime-local" id="end-time" required>
+        </label>
+        <button type="submit">Reservar</button>
+      </form>
+      <p id="form-message"></p>
+    </section>
+
+    <section id="reservations-section">
+      <h2>Reservas existentes</h2>
+      <ul id="reservations-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
