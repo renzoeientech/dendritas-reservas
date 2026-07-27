@@ -1,84 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salas · Reserva de espacios</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<title>Salas · Reserva de espacios</title>
-<link rel="icon" href="data:,">
-</head>
-<body>
-
-<header class="topbar">
-  <div class="brand">
-    <span class="brand-mark">◧</span>
-    <span class="brand-name">Salas</span>
-  </div>
-  <div class="topbar-date" id="today-label"></div>
-</header>
-
-<main class="layout">
-
-  <section class="panel rooms-panel">
-    <div class="panel-head">
-      <h1>Salas de hoy</h1>
-      <p class="panel-sub">Tocá una sala para reservarla</p>
-    </div>
-
-    <div id="rooms-grid" class="rooms-grid" aria-live="polite">
-      <!-- room cards injected by JS -->
-    </div>
-  </section>
-
-  <section class="panel form-panel" id="form-panel">
-    <div class="panel-head">
-      <h2>Nueva reserva</h2>
-      <p class="panel-sub" id="selected-room-label">Elegí una sala</p>
-    </div>
-
-    <form id="reservation-form" novalidate>
-      <input type="hidden" id="room-id" required>
-
-      <label class="field">
-        <span>Título de la reunión</span>
-        <input type="text" id="title" placeholder="Ej: Sync semanal de equipo" required>
-      </label>
-
-      <label class="field">
-        <span>Tu nombre</span>
-        <input type="text" id="user-name" placeholder="Ej: María Gómez" required>
-      </label>
-
-      <div class="field-row">
-        <label class="field">
-          <span>Inicio</span>
-          <input type="datetime-local" id="start-time" required>
-        </label>
-        <label class="field">
-          <span>Fin</span>
-          <input type="datetime-local" id="end-time" required>
-        </label>
-      </div>
-
-      <button type="submit" class="btn-primary">Confirmar reserva</button>
-      <p id="form-message" role="status"></p>
-    </form>
-  </section>
-
-  <section class="panel list-panel">
-    <div class="panel-head">
-      <h2>Próximas reservas</h2>
-    </div>
-    <ul id="reservations-list" class="reservations-list"></ul>
-    <p id="empty-state" class="empty-state" hidden>No hay reservas por ahora. Cuando confirmes una, va a aparecer acá.</p>
-  </section>
-
-</main>
-
-<script src="app.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dendritas Reservas</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
