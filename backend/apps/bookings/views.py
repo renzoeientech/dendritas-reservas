@@ -7,6 +7,7 @@ from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 
 from apps.rooms.models import Room
+from apps.users.models import Role
 
 from .models import Booking, BookingStatus
 from .permissions import CanCancelBooking, is_privileged_for_booking
@@ -14,13 +15,15 @@ from .serializers import BookingRedactedSerializer, BookingSerializer
 
 
 def _parse_boundary(value, end_of_day=False):
-    dt = parse_datetime(value)
-    if dt is not None:
-        return timezone.make_aware(dt) if timezone.is_naive(dt) else dt
+    # parse_date se intenta primero: "YYYY-MM-DD" también matchea parse_datetime
+    # (como medianoche), lo que ignoraría silenciosamente end_of_day.
     d = parse_date(value)
     if d is not None:
         t = datetime.time.max if end_of_day else datetime.time.min
         return timezone.make_aware(datetime.datetime.combine(d, t))
+    dt = parse_datetime(value)
+    if dt is not None:
+        return timezone.make_aware(dt) if timezone.is_naive(dt) else dt
     raise serializers.ValidationError({"detail": f"Fecha inválida: {value}"})
 
 
@@ -55,10 +58,18 @@ class BookingListCreateView(generics.ListCreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = self.request.user
-        if user.company_id is None:
-            raise serializers.ValidationError(
-                {"company": "Tu usuario no pertenece a ninguna empresa; no podés crear reservas."}
-            )
+        if user.role == Role.SUPERADMIN:
+            company = serializer.validated_data.get("company")
+            if company is None:
+                raise serializers.ValidationError(
+                    {"company_id": "Elegí para qué empresa es la reserva."}
+                )
+        else:
+            if user.company_id is None:
+                raise serializers.ValidationError(
+                    {"company": "Tu usuario no pertenece a ninguna empresa; no podés crear reservas."}
+                )
+            company = user.company
 
         room = Room.objects.select_for_update().get(pk=serializer.validated_data["room"].pk)
         start, end = serializer.validated_data["start_time"], serializer.validated_data["end_time"]
@@ -74,7 +85,7 @@ class BookingListCreateView(generics.ListCreateAPIView):
                 {"detail": "Ya existe una reserva confirmada que se superpone con ese horario en esta sala."}
             )
 
-        serializer.save(user=user, company=user.company)
+        serializer.save(user=user, company=company)
 
 
 class BookingDetailView(generics.DestroyAPIView):

@@ -1,14 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { cancelBookingRequest, listBookingsRequest } from '../api/bookings'
 import { listRoomsRequest } from '../api/rooms'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/Alert/Alert'
-import { AvailabilityGrid } from '../components/AvailabilityGrid/AvailabilityGrid'
 import { Badge } from '../components/Badge/Badge'
-import { BookingFormModal } from '../components/BookingFormModal/BookingFormModal'
+import { BookingCalendar } from '../components/BookingCalendar/BookingCalendar'
 import { Button } from '../components/Button/Button'
 import { Card } from '../components/Card/Card'
 import { EmptyState } from '../components/EmptyState/EmptyState'
@@ -23,11 +22,10 @@ function formatDateTime(value) {
 export function BookingsPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const roomFilter = searchParams.get('room') ?? ''
 
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [formPrefill, setFormPrefill] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [cancelError, setCancelError] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
@@ -65,11 +63,6 @@ export function BookingsPage() {
     }
   }
 
-  function openNewBookingModal() {
-    setFormPrefill(null)
-    setIsFormOpen(true)
-  }
-
   function openCancelModal(booking) {
     setCancelError(null)
     setCancelTarget(booking)
@@ -77,20 +70,19 @@ export function BookingsPage() {
 
   return (
     <div>
-      <p>
-        <Link to="/">Volver</Link>
-      </p>
+      <Button variant="ghost" size="sm" className="back-button" onClick={() => navigate('/')}>
+        <ArrowLeft size={16} aria-hidden="true" />
+        Volver
+      </Button>
       <h1>Reservas</h1>
 
       <Alert variant="success">{successMessage}</Alert>
 
       <Card>
-        <AvailabilityGrid
-          onSlotClick={(room, start, end) => {
-            setFormPrefill({ room: room.id, start, end })
-            setIsFormOpen(true)
-          }}
-          onBusyClick={openCancelModal}
+        <BookingCalendar
+          rooms={roomsQuery.data ?? []}
+          user={user}
+          onCreated={() => setSuccessMessage('Reserva creada correctamente.')}
         />
       </Card>
 
@@ -107,12 +99,8 @@ export function BookingsPage() {
             ))}
           </select>
         </label>
-        <Button onClick={openNewBookingModal} disabled={!user.company}>
-          <Plus size={16} aria-hidden="true" />
-          Nueva reserva
-        </Button>
       </div>
-      {!user.company && (
+      {!user.company && user.role !== 'superadmin' && (
         <p className="field-error">Tu usuario no pertenece a ninguna empresa; no podés crear reservas.</p>
       )}
 
@@ -168,14 +156,6 @@ export function BookingsPage() {
           </table>
         </div>
       )}
-
-      <BookingFormModal
-        open={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        rooms={roomsQuery.data ?? []}
-        prefill={formPrefill}
-        onCreated={() => setSuccessMessage('Reserva creada correctamente.')}
-      />
 
       <Modal open={Boolean(cancelTarget)} onClose={() => setCancelTarget(null)} title="Cancelar reserva">
         {cancelTarget && (

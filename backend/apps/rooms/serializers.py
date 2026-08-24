@@ -6,7 +6,7 @@ from .models import Room, RoomSchedule
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ("id", "name", "capacity", "location", "color", "is_active")
+        fields = ("id", "name", "capacity", "location", "color", "amenities", "photo", "is_active")
         read_only_fields = ("id",)
 
 

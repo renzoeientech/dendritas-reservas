@@ -1,0 +1,170 @@
+.booking-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.booking-calendar-body {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.booking-calendar-month {
+  flex: 1 1 20rem;
+  min-width: 18rem;
+}
+
+.booking-calendar-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.booking-calendar-month-label {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-lg);
+}
+
+.booking-calendar-nav {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.booking-calendar-nav:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.booking-calendar-weekdays,
+.booking-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.booking-calendar-weekdays span {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  padding-block: var(--space-1);
+}
+
+.booking-calendar-day {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.booking-calendar-day:hover:not(:disabled) {
+  background: var(--primary-soft-bg);
+}
+
+.booking-calendar-day:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.booking-calendar-day.is-outside {
+  color: var(--border-strong);
+}
+
+.booking-calendar-day.is-today {
+  color: var(--primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.booking-calendar-day-dot {
+  position: absolute;
+  bottom: 0.2rem;
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+.booking-calendar-day.is-selected {
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font-weight: var(--font-weight-semibold);
+}
+
+.booking-calendar-day.is-selected .booking-calendar-day-dot {
+  background: var(--primary-contrast);
+}
+
+.booking-calendar-panel {
+  flex: 1 1 16rem;
+  min-width: 15rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.booking-calendar-panel-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.booking-calendar-panel-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.booking-calendar-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.booking-calendar-time-row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.booking-calendar-time-row .form-field {
+  flex: 1;
+}
+
+.booking-calendar-busy-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.booking-calendar-busy-label {
+  color: var(--text-muted);
+  margin-right: var(--space-1);
+}
+
+.booking-calendar-busy-chip {
+  display: inline-flex;
+  padding: 0.2rem var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--busy-bg);
+  color: var(--busy-text);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+}

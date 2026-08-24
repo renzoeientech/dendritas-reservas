@@ -1,3 +1,6 @@
+# Django uploaded media
+backend/media/
+
 # Logs
 logs
 *.log

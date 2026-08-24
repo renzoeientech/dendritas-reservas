@@ -5,8 +5,28 @@ export async function listRoomsRequest() {
   return data
 }
 
-export async function createRoomRequest({ name, capacity, location, color }) {
-  const { data } = await client.post('/rooms/', { name, capacity, location, color })
+function buildRoomFormData({ name, capacity, location, color, amenities, photoFile }) {
+  const formData = new FormData()
+  formData.append('name', name)
+  formData.append('capacity', capacity)
+  formData.append('location', location)
+  formData.append('color', color)
+  for (const amenity of amenities ?? []) {
+    formData.append('amenities', amenity)
+  }
+  if (photoFile) {
+    formData.append('photo', photoFile)
+  }
+  return formData
+}
+
+export async function createRoomRequest(room) {
+  const { data } = await client.post('/rooms/', buildRoomFormData(room))
+  return data
+}
+
+export async function updateRoomRequest(roomId, room) {
+  const { data } = await client.patch(`/rooms/${roomId}/`, buildRoomFormData(room))
   return data
 }
 

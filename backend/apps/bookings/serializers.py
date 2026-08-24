@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.companies.models import Company
 from apps.rooms.models import RoomSchedule
 from apps.users.models import User
 from apps.users.serializers import CompanySerializer
@@ -18,6 +19,11 @@ class BookingUserSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     user = BookingUserSerializer(read_only=True)
     company = CompanySerializer(read_only=True)
+    # Solo la usa un superadmin para reservar en nombre de una empresa; para el
+    # resto de los usuarios la empresa sale de su propio usuario (ver perform_create).
+    company_id = serializers.PrimaryKeyRelatedField(
+        source="company", queryset=Company.objects.all(), write_only=True, required=False
+    )
 
     class Meta:
         model = Booking
@@ -26,6 +32,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "room",
             "user",
             "company",
+            "company_id",
             "title",
             "start_time",
             "end_time",

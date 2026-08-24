@@ -1,51 +1,63 @@
-import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { createRoomRequest, listRoomsRequest } from '../api/rooms'
+import { useQuery } from '@tanstack/react-query'
+import { Coffee, ImageOff, Pencil, Plus, Presentation, Projector, Snowflake, Tv, Users, Wifi } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { listRoomsRequest } from '../api/rooms'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/Alert/Alert'
-import { Badge } from '../components/Badge/Badge'
 import { Button } from '../components/Button/Button'
-import { Card } from '../components/Card/Card'
 import { EmptyState } from '../components/EmptyState/EmptyState'
-import { FormField } from '../components/FormField/FormField'
-import { getErrorMessage } from '../utils/apiErrors'
+import { RoomFormModal } from '../components/RoomFormModal/RoomFormModal'
+import './RoomsPage.css'
 
-const emptyForm = { name: '', capacity: '', location: '', color: '#1e90ff' }
+const AMENITY_ICONS = {
+  tv: { icon: Tv, label: 'TV' },
+  pizarra: { icon: Presentation, label: 'Pizarra' },
+  proyector: { icon: Projector, label: 'Proyector' },
+  wifi: { icon: Wifi, label: 'Wifi' },
+  aire_acondicionado: { icon: Snowflake, label: 'Aire acondicionado' },
+  cafetera: { icon: Coffee, label: 'Cafetera' },
+}
 
 export function RoomsPage() {
   const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const [form, setForm] = useState(emptyForm)
-  const [error, setError] = useState(null)
+  const navigate = useNavigate()
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingRoom, setEditingRoom] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
+
+  useEffect(() => {
+    if (!successMessage) return
+    const timeout = setTimeout(() => setSuccessMessage(null), 4000)
+    return () => clearTimeout(timeout)
+  }, [successMessage])
 
   const roomsQuery = useQuery({ queryKey: ['rooms'], queryFn: listRoomsRequest })
+  const canManage = user.role === 'superadmin'
 
-  const createRoom = useMutation({
-    mutationFn: createRoomRequest,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms'] })
-      setForm(emptyForm)
-      setError(null)
-    },
-    onError: (err) => {
-      setError(getErrorMessage(err, 'No se pudo crear la sala.'))
-    },
-  })
-
-  function updateField(key, value) {
-    setForm((prev) => ({ ...prev, [key]: value }))
+  function openNewRoomModal() {
+    setEditingRoom(null)
+    setIsFormOpen(true)
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    createRoom.mutate({ ...form, capacity: Number(form.capacity) })
+  function openEditRoomModal(room) {
+    setEditingRoom(room)
+    setIsFormOpen(true)
   }
 
   return (
     <div>
-      <h1>Salas</h1>
+      <div className="rooms-toolbar">
+        <h1>Salas</h1>
+        {canManage && (
+          <Button onClick={openNewRoomModal}>
+            <Plus size={16} aria-hidden="true" />
+            Nueva sala
+          </Button>
+        )}
+      </div>
+
+      <Alert variant="success">{successMessage}</Alert>
 
       {roomsQuery.isLoading && <p>Cargando...</p>}
       {roomsQuery.isError && <p className="form-error">No se pudieron cargar las salas.</p>}
@@ -55,70 +67,73 @@ export function RoomsPage() {
       )}
 
       {roomsQuery.data?.length > 0 && (
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Capacidad</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {roomsQuery.data.map((room) => (
-                <tr key={room.id}>
-                  <td>
-                    <span className="color-dot" style={{ backgroundColor: room.color }} />
-                    {room.name}
-                  </td>
-                  <td>{room.capacity}</td>
-                  <td>{room.location || '—'}</td>
-                  <td>
-                    <Badge variant={room.is_active ? 'active' : 'inactive'} />
-                  </td>
-                  <td>
-                    <Link to={`/bookings?room=${room.id}`}>Ver reservas</Link>
-                    {' · '}
-                    <Link to={`/rooms/${room.id}/schedule`}>Horario</Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="rooms-grid">
+          {roomsQuery.data.map((room) => (
+            <div key={room.id} className="room-card">
+              <div className="room-card-photo">
+                {room.photo ? (
+                  <img src={room.photo} alt={room.name} />
+                ) : (
+                  <div className="room-card-photo-placeholder">
+                    <ImageOff size={24} aria-hidden="true" />
+                  </div>
+                )}
+              </div>
+
+              <div className="room-card-body">
+                <div className="room-card-title">
+                  <span className="color-dot" style={{ backgroundColor: room.color }} />
+                  <h3>{room.name}</h3>
+                </div>
+                <p className="room-card-meta">
+                  <Users size={14} aria-hidden="true" /> Capacidad para {room.capacity}{' '}
+                  {room.capacity === 1 ? 'persona' : 'personas'}
+                  {room.location ? ` · ${room.location}` : ''}
+                </p>
+
+                {room.amenities?.length > 0 && (
+                  <div className="room-card-amenities">
+                    {room.amenities.map((amenity) => {
+                      const meta = AMENITY_ICONS[amenity]
+                      if (!meta) return null
+                      const Icon = meta.icon
+                      return (
+                        <span key={amenity} className="room-amenity-badge" title={meta.label}>
+                          <Icon size={13} aria-hidden="true" />
+                          {meta.label}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div className="room-card-actions">
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/bookings?room=${room.id}`)}>
+                    Ver reservas
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => navigate(`/rooms/${room.id}/schedule`)}>
+                    Horario
+                  </Button>
+                  {canManage && (
+                    <Button variant="ghost" size="sm" onClick={() => openEditRoomModal(room)}>
+                      <Pencil size={14} aria-hidden="true" />
+                      Editar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {user.role === 'superadmin' && (
-        <Card>
-          <h3>Nueva sala</h3>
-          <form onSubmit={handleSubmit}>
-            <FormField label="Nombre">
-              <input value={form.name} onChange={(e) => updateField('name', e.target.value)} required />
-            </FormField>
-            <FormField label="Capacidad">
-              <input
-                type="number"
-                min="1"
-                value={form.capacity}
-                onChange={(e) => updateField('capacity', e.target.value)}
-                required
-              />
-            </FormField>
-            <FormField label="Ubicación">
-              <input value={form.location} onChange={(e) => updateField('location', e.target.value)} />
-            </FormField>
-            <FormField label="Color">
-              <input type="color" value={form.color} onChange={(e) => updateField('color', e.target.value)} />
-            </FormField>
-            <Alert variant="error">{error}</Alert>
-            <Button type="submit" loading={createRoom.isPending}>
-              <Plus size={16} aria-hidden="true" />
-              Crear sala
-            </Button>
-          </form>
-        </Card>
+      {canManage && (
+        <RoomFormModal
+          open={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          room={editingRoom}
+          onSaved={() => setSuccessMessage(editingRoom ? 'Sala actualizada correctamente.' : 'Sala creada correctamente.')}
+        />
       )}
     </div>
   )

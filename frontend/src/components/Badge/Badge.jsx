@@ -10,6 +10,6 @@ const LABELS = {
   inactive: 'Inactiva',
 }
 
-export function Badge({ variant, children }) {
-  return <span className={`badge badge-${variant}`}>{children ?? LABELS[variant] ?? variant}</span>
+export function Badge({ variant, children, className = '' }) {
+  return <span className={`badge badge-${variant} ${className}`}>{children ?? LABELS[variant] ?? variant}</span>
 }
