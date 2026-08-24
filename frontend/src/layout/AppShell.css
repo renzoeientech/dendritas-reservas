@@ -1,0 +1,115 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-shell-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.app-shell-brand {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-lg);
+  margin-right: auto;
+}
+
+.app-shell-nav {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.app-shell-link {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  padding: var(--space-1) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.app-shell-link:hover {
+  color: var(--text);
+}
+
+.app-shell-link-active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.app-shell-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-shell-user-name {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.app-shell-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  padding: var(--space-1);
+  cursor: pointer;
+}
+
+.app-shell-nav-mobile {
+  display: none;
+}
+
+.app-shell-main {
+  flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .app-shell-header-inner .app-shell-nav,
+  .app-shell-header-inner .app-shell-user {
+    display: none;
+  }
+
+  .app-shell-menu-toggle {
+    display: inline-flex;
+  }
+
+  .app-shell-nav-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: 0 var(--space-4) var(--space-4);
+    border-top: 1px solid var(--border);
+  }
+
+  .app-shell-nav-mobile .app-shell-link {
+    padding: var(--space-2) 0;
+    border-bottom: none;
+  }
+
+  .app-shell-nav-mobile .app-shell-user {
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border);
+    justify-content: space-between;
+  }
+}
