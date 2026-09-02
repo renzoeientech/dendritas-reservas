@@ -54,6 +54,17 @@
   background: var(--danger-hover);
 }
 
+.btn-danger-outline {
+  background: transparent;
+  color: var(--danger-text);
+  border-color: var(--danger);
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--danger);
+  color: var(--primary-contrast);
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);

@@ -1,29 +1,29 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* === Primitivos: paleta === */
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
+  --color-primary-50: #faf6f0;
+  --color-primary-100: #f2e9dc;
+  --color-primary-200: #e6d3b8;
+  --color-primary-300: #d8bd94;
+  --color-primary-400: #c9a06a;
+  --color-primary-500: #b8874c;
+  --color-primary-600: #a06f3a;
+  --color-primary-700: #7f5730;
+  --color-primary-800: #63442a;
 
   --color-neutral-0: #ffffff;
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-300: #cbd5e1;
-  --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
-  --color-neutral-950: #020617;
+  --color-neutral-50: #faf8f5;
+  --color-neutral-100: #f5f0e8;
+  --color-neutral-200: #ece3d5;
+  --color-neutral-300: #ddd0ba;
+  --color-neutral-400: #b3a58e;
+  --color-neutral-500: #8a7c67;
+  --color-neutral-600: #6b5f4e;
+  --color-neutral-700: #4d4437;
+  --color-neutral-800: #322b22;
+  --color-neutral-900: #1f1a15;
+  --color-neutral-950: #14100c;
 
   --color-green-100: #dcfce7;
   --color-green-300: #86efac;
@@ -56,6 +56,15 @@
   --primary-contrast: var(--color-neutral-0);
   --primary-soft-bg: var(--color-primary-50);
   --primary-soft-text: var(--color-primary-700);
+
+  /* Color de acento único del dashboard (navbar activo, hover de tarjetas,
+     íconos). Reutiliza la paleta de --primary a propósito, para no divergir
+     del color que ya usan los botones en el resto de la app. */
+  --accent: var(--primary);
+  --accent-hover: var(--primary-hover);
+  --accent-contrast: var(--primary-contrast);
+  --accent-soft-bg: var(--primary-soft-bg);
+  --accent-soft-text: var(--primary-soft-text);
 
   --success: var(--color-green-600);
   --success-bg: var(--color-green-100);
@@ -118,49 +127,4 @@
 
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: var(--color-neutral-950);
-    --surface: var(--color-neutral-900);
-    --surface-hover: var(--color-neutral-800);
-    --text: var(--color-neutral-50);
-    --text-muted: var(--color-neutral-400);
-    --border: var(--color-neutral-700);
-    --border-strong: var(--color-neutral-600);
-
-    --primary: var(--color-primary-400);
-    --primary-hover: var(--color-primary-300);
-    --primary-contrast: var(--color-neutral-950);
-    --primary-soft-bg: rgb(99 102 241 / 0.16);
-    --primary-soft-text: var(--color-primary-300);
-
-    --success: var(--color-green-500);
-    --success-bg: rgb(34 197 94 / 0.16);
-    --success-text: var(--color-green-300);
-
-    --danger: var(--color-red-500);
-    --danger-hover: var(--color-red-300);
-    --danger-bg: rgb(239 68 68 / 0.16);
-    --danger-text: var(--color-red-300);
-
-    --warning-bg: rgb(245 158 11 / 0.16);
-    --warning-text: var(--color-amber-500);
-
-    --free-bg: rgb(34 197 94 / 0.14);
-    --free-border: rgb(34 197 94 / 0.4);
-    --free-text: var(--color-green-300);
-    --busy-bg: rgb(239 68 68 / 0.16);
-    --busy-border: rgb(239 68 68 / 0.4);
-    --busy-text: var(--color-red-300);
-    --closed-bg: var(--color-neutral-800);
-    --closed-text: var(--color-neutral-400);
-
-    --focus-ring: var(--color-primary-300);
-
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 12px rgb(0 0 0 / 0.35);
-    --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.45);
-  }
 }

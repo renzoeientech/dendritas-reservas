@@ -74,7 +74,7 @@
 }
 
 .booking-calendar-day:hover:not(:disabled) {
-  background: var(--primary-soft-bg);
+  background: var(--accent-soft-bg);
 }
 
 .booking-calendar-day:disabled {
@@ -83,31 +83,34 @@
 }
 
 .booking-calendar-day.is-outside {
-  color: var(--border-strong);
+  color: var(--text-muted);
 }
 
-.booking-calendar-day.is-today {
-  color: var(--primary);
+/* "Hoy": anillo propio, independiente de si además está seleccionado. */
+.booking-calendar-day.is-today:not(.is-selected) {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--accent);
   font-weight: var(--font-weight-semibold);
 }
 
+/* "Tiene reservas": punto pequeño, se combina con cualquier otro estado. */
 .booking-calendar-day-dot {
   position: absolute;
   bottom: 0.2rem;
   width: 0.25rem;
   height: 0.25rem;
   border-radius: var(--radius-full);
-  background: currentColor;
+  background: var(--accent);
 }
 
 .booking-calendar-day.is-selected {
-  background: var(--primary);
-  color: var(--primary-contrast);
+  background: var(--accent);
+  color: var(--accent-contrast);
   font-weight: var(--font-weight-semibold);
 }
 
 .booking-calendar-day.is-selected .booking-calendar-day-dot {
-  background: var(--primary-contrast);
+  background: var(--accent-contrast);
 }
 
 .booking-calendar-panel {
@@ -135,6 +138,17 @@
   gap: var(--space-2);
   color: var(--text-muted);
   font-size: var(--text-sm);
+}
+
+.booking-calendar-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.booking-calendar-form-group + .booking-calendar-form-group {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .booking-calendar-time-row {

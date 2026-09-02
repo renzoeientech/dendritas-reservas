@@ -1,7 +1,9 @@
 from django.urls import path
 
-from .views import CompanyListView
+from .views import CompanyAdminDetailView, CompanyDetailView, CompanyListCreateView
 
 urlpatterns = [
-    path("", CompanyListView.as_view(), name="company-list"),
+    path("", CompanyListCreateView.as_view(), name="company-list-create"),
+    path("<int:pk>/", CompanyDetailView.as_view(), name="company-detail"),
+    path("<int:company_id>/admin/", CompanyAdminDetailView.as_view(), name="company-admin-detail"),
 ]

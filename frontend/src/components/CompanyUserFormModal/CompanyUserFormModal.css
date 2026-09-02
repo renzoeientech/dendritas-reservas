@@ -1,0 +1,5 @@
+.company-user-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

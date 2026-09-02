@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { loginRequest, meRequest, registerCompanyRequest } from '../api/auth'
+import { loginRequest, meRequest } from '../api/auth'
 
 const AuthContext = createContext(null)
 
@@ -36,13 +36,8 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  async function registerCompany(formData) {
-    await registerCompanyRequest(formData)
-    await login(formData.email, formData.password)
-  }
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, registerCompany }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

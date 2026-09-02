@@ -47,12 +47,21 @@ function timeToMinutes(value) {
   return h * 60 + m
 }
 
+function minutesSinceMidnight(date) {
+  return date.getHours() * 60 + date.getMinutes()
+}
+
 function minutesToDate(baseDate, minutes) {
   return new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 0, minutes)
 }
 
 function formatTime(date) {
   return date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+}
+
+// Un título de solo espacios o puntuación (ej. ".") no cuenta como completado.
+function isMeaningfulTitle(value) {
+  return Boolean(value && /[a-zA-Z0-9]/.test(value))
 }
 
 function buildMonthCells(monthDate) {
@@ -85,6 +94,7 @@ export function BookingCalendar({ rooms, user, onCreated }) {
   const [desdeMinutes, setDesdeMinutes] = useState(null)
   const [hastaMinutes, setHastaMinutes] = useState(null)
   const [title, setTitle] = useState('')
+  const [titleTouched, setTitleTouched] = useState(false)
   const [error, setError] = useState(null)
 
   if (!selectedRoomId && rooms.length > 0) {
@@ -111,6 +121,27 @@ export function BookingCalendar({ rooms, user, onCreated }) {
     enabled: Boolean(selectedRoomId),
   })
 
+  const monthRange = useMemo(() => {
+    const start = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+    const end = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+    return { from: formatDateKey(start), to: formatDateKey(end) }
+  }, [monthDate])
+
+  const monthBookingsQuery = useQuery({
+    queryKey: ['bookings', 'month', selectedRoomId, monthRange.from, monthRange.to],
+    queryFn: () => listBookingsRequest({ room: selectedRoomId, from: monthRange.from, to: monthRange.to }),
+    enabled: Boolean(selectedRoomId),
+  })
+
+  const bookedDateKeys = useMemo(() => {
+    const keys = new Set()
+    for (const b of monthBookingsQuery.data ?? []) {
+      if (b.status !== 'confirmed') continue
+      keys.add(formatDateKey(new Date(b.start_time)))
+    }
+    return keys
+  }, [monthBookingsQuery.data])
+
   const daySchedule = useMemo(() => {
     if (!scheduleQuery.data) return null
     const weekday = toBackendWeekday(selectedDate)
@@ -131,18 +162,48 @@ export function BookingCalendar({ rooms, user, onCreated }) {
     return opts
   }, [daySchedule, selectedDate])
 
-  const desdeOptions = timeOptions.slice(0, -1)
-  const effectiveDesde = desdeOptions.includes(desdeMinutes) ? desdeMinutes : (desdeOptions[0] ?? null)
-  const hastaOptions = effectiveDesde != null ? timeOptions.filter((m) => m > effectiveDesde) : []
-  const effectiveHasta = hastaOptions.includes(hastaMinutes) ? hastaMinutes : (hastaOptions[0] ?? null)
-
   const confirmedBookings = useMemo(
     () => (bookingsQuery.data ?? []).filter((b) => b.status === 'confirmed'),
     [bookingsQuery.data]
   )
 
+  // Intervalos ocupados de ese día, en minutos desde medianoche, para filtrar los selects.
+  const busyIntervals = useMemo(
+    () =>
+      confirmedBookings.map((b) => ({
+        start: minutesSinceMidnight(new Date(b.start_time)),
+        end: minutesSinceMidnight(new Date(b.end_time)),
+      })),
+    [confirmedBookings]
+  )
+
+  // "Desde" solo ofrece horarios que no caen dentro de una reserva existente.
+  const desdeOptions = useMemo(
+    () =>
+      timeOptions
+        .slice(0, -1)
+        .filter((m) => !busyIntervals.some((iv) => m >= iv.start && m < iv.end)),
+    [timeOptions, busyIntervals]
+  )
+  const effectiveDesde = desdeOptions.includes(desdeMinutes) ? desdeMinutes : (desdeOptions[0] ?? null)
+
+  // "Hasta" corta apenas el rango [desde, hasta) tocaría una reserva existente.
+  const hastaOptions = useMemo(() => {
+    if (effectiveDesde == null) return []
+    const opts = []
+    for (const m of timeOptions) {
+      if (m <= effectiveDesde) continue
+      if (busyIntervals.some((iv) => effectiveDesde < iv.end && m > iv.start)) break
+      opts.push(m)
+    }
+    return opts
+  }, [timeOptions, effectiveDesde, busyIntervals])
+  const effectiveHasta = hastaOptions.includes(hastaMinutes) ? hastaMinutes : (hastaOptions[0] ?? null)
+
   const rangeStart = effectiveDesde != null ? minutesToDate(selectedDate, effectiveDesde) : null
   const rangeEnd = effectiveHasta != null ? minutesToDate(selectedDate, effectiveHasta) : null
+  // Chequeo defensivo: con los selects ya filtrados esto no debería dispararse en uso normal,
+  // salvo que otra reserva se cree justo mientras el usuario elige el horario.
   const overlapsBooking = Boolean(
     rangeStart && rangeEnd && confirmedBookings.some((b) => new Date(b.start_time) < rangeEnd && new Date(b.end_time) > rangeStart)
   )
@@ -154,6 +215,7 @@ export function BookingCalendar({ rooms, user, onCreated }) {
       setDesdeMinutes(null)
       setHastaMinutes(null)
       setTitle('')
+      setTitleTouched(false)
       setError(null)
       onCreated?.()
     },
@@ -163,7 +225,11 @@ export function BookingCalendar({ rooms, user, onCreated }) {
   })
 
   function handleReservar() {
-    if (!selectedRoomId || !title.trim() || !rangeStart || !rangeEnd || overlapsBooking) return
+    if (!isMeaningfulTitle(title)) {
+      setTitleTouched(true)
+      return
+    }
+    if (!selectedRoomId || !rangeStart || !rangeEnd || overlapsBooking) return
     if (isSuperAdmin && !selectedCompanyId) return
     setError(null)
     createBooking.mutate({
@@ -183,7 +249,7 @@ export function BookingCalendar({ rooms, user, onCreated }) {
   const reservarDisabled =
     !canBook ||
     (isSuperAdmin && !selectedCompanyId) ||
-    !title.trim() ||
+    !isMeaningfulTitle(title) ||
     !rangeStart ||
     !rangeEnd ||
     overlapsBooking ||
@@ -247,29 +313,36 @@ export function BookingCalendar({ rooms, user, onCreated }) {
               {cells.map((cell) => {
                 const isSelected = isSameDay(cell.date, selectedDate)
                 const isToday = isSameDay(cell.date, today)
-                const disabled = cell.outside || cell.date < today
+                const hasBookings = !cell.outside && bookedDateKeys.has(cell.key)
+                // "outside" solo indica que la celda pertenece al mes anterior/siguiente
+                // (padding visual de la grilla); no debe impedir elegir un día futuro válido.
+                const disabled = cell.date < today
                 return (
                   <button
                     key={cell.key}
                     type="button"
                     disabled={disabled}
+                    title={hasBookings ? 'Este día tiene reservas' : undefined}
                     className={[
                       'booking-calendar-day',
                       isSelected && 'is-selected',
                       cell.outside && 'is-outside',
-                      isToday && !isSelected && 'is-today',
+                      isToday && 'is-today',
                     ]
                       .filter(Boolean)
                       .join(' ')}
                     onClick={() => {
                       setSelectedDate(cell.date)
+                      if (cell.outside) {
+                        setMonthDate(new Date(cell.date.getFullYear(), cell.date.getMonth(), 1))
+                      }
                       setDesdeMinutes(null)
                       setHastaMinutes(null)
                       setError(null)
                     }}
                   >
                     {cell.date.getDate()}
-                    {isToday && <span className="booking-calendar-day-dot" />}
+                    {hasBookings && <span className="booking-calendar-day-dot" />}
                   </button>
                 )
               })}
@@ -286,40 +359,47 @@ export function BookingCalendar({ rooms, user, onCreated }) {
               <Alert variant="error">Tu usuario no pertenece a ninguna empresa; no podés crear reservas.</Alert>
             )}
 
-            {isSuperAdmin && (
-              <FormField
-                label="Empresa"
-                hint="Como superadmin, elegí para qué empresa es esta reserva."
-              >
-                <select
-                  value={selectedCompanyId}
-                  onChange={(e) => setSelectedCompanyId(e.target.value)}
-                  disabled={companiesQuery.isLoading}
+            <div className="booking-calendar-form-group">
+              {isSuperAdmin && (
+                <FormField
+                  label="Empresa"
+                  hint="Como superadmin, elegí para qué empresa es esta reserva."
                 >
-                  <option value="" disabled>
-                    {companiesQuery.isLoading ? 'Cargando empresas...' : 'Elegí una empresa'}
-                  </option>
-                  {companiesQuery.data?.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
+                  <select
+                    value={selectedCompanyId}
+                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    disabled={companiesQuery.isLoading}
+                  >
+                    <option value="" disabled>
+                      {companiesQuery.isLoading ? 'Cargando empresas...' : 'Elegí una empresa'}
                     </option>
-                  ))}
-                </select>
-              </FormField>
-            )}
+                    {companiesQuery.data?.map((company) => (
+                      <option key={company.id} value={company.id}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+              )}
 
-            <FormField
-              label="Título de la reserva"
-              hint={canBook ? 'Obligatorio para poder reservar el horario elegido.' : undefined}
-              error={canBook && desdeOptions.length > 0 && !title.trim() ? 'Ingresá un título para poder reservar.' : undefined}
-            >
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Reunión de equipo"
-                disabled={!canBook}
-              />
-            </FormField>
+              <FormField
+                label="Título de la reserva"
+                hint={canBook ? 'Obligatorio para poder reservar el horario elegido.' : undefined}
+                error={
+                  canBook && titleTouched && !isMeaningfulTitle(title)
+                    ? 'Ingresá un título para poder reservar.'
+                    : undefined
+                }
+              >
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={() => setTitleTouched(true)}
+                  placeholder="Ej: Reunión de equipo"
+                  disabled={!canBook}
+                />
+              </FormField>
+            </div>
 
             {!selectedRoomId && <p className="booking-calendar-hint">Elegí una sala para ver el horario disponible.</p>}
 
@@ -338,7 +418,7 @@ export function BookingCalendar({ rooms, user, onCreated }) {
             )}
 
             {selectedRoomId && !isLoadingSchedule && daySchedule && desdeOptions.length > 0 && (
-              <>
+              <div className="booking-calendar-form-group">
                 {confirmedBookings.length > 0 && (
                   <div className="booking-calendar-busy-list">
                     <span className="booking-calendar-busy-label">Ya reservado:</span>
@@ -386,7 +466,7 @@ export function BookingCalendar({ rooms, user, onCreated }) {
                 <Button loading={createBooking.isPending} disabled={reservarDisabled} onClick={handleReservar}>
                   Reservar
                 </Button>
-              </>
+              </div>
             )}
 
             <Alert variant="error">{error}</Alert>

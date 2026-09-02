@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/Alert/Alert'
 import { Button } from '../components/Button/Button'
@@ -49,9 +49,6 @@ export function LoginPage() {
             Ingresar
           </Button>
         </form>
-        <p className="auth-switch">
-          ¿No tenés cuenta? <Link to="/register">Registrá tu empresa</Link>
-        </p>
       </Card>
     </div>
   )

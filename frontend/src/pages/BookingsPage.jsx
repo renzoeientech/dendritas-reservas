@@ -6,7 +6,6 @@ import { cancelBookingRequest, listBookingsRequest } from '../api/bookings'
 import { listRoomsRequest } from '../api/rooms'
 import { useAuth } from '../auth/AuthContext'
 import { Alert } from '../components/Alert/Alert'
-import { Badge } from '../components/Badge/Badge'
 import { BookingCalendar } from '../components/BookingCalendar/BookingCalendar'
 import { Button } from '../components/Button/Button'
 import { Card } from '../components/Card/Card'
@@ -17,6 +16,17 @@ import './BookingsPage.css'
 
 function formatDateTime(value) {
   return new Date(value).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+function hasMeaningfulTitle(value) {
+  return Boolean(value && /[a-zA-Z0-9]/.test(value))
+}
+
+// `title` ausente = reserva de otra empresa, oculta por privacidad ("Reservado").
+// `title` presente pero sin contenido real (vacío, espacios, solo puntuación) = dato inválido.
+function titleDisplay(title) {
+  if (title === undefined) return 'Reservado'
+  return hasMeaningfulTitle(title) ? title : '(sin título)'
 }
 
 export function BookingsPage() {
@@ -41,6 +51,8 @@ export function BookingsPage() {
     queryKey: ['bookings', roomFilter],
     queryFn: () => listBookingsRequest({ room: roomFilter || undefined }),
   })
+  // Las reservas canceladas no se muestran: al cancelar, la fila desaparece de la pantalla.
+  const activeBookings = bookingsQuery.data?.filter((booking) => booking.status === 'confirmed')
 
   const cancelBooking = useMutation({
     mutationFn: cancelBookingRequest,
@@ -107,14 +119,14 @@ export function BookingsPage() {
       {bookingsQuery.isLoading && <p>Cargando...</p>}
       {bookingsQuery.isError && <p className="form-error">No se pudieron cargar las reservas.</p>}
 
-      {bookingsQuery.data?.length === 0 && (
+      {activeBookings?.length === 0 && (
         <EmptyState
           title="No hay reservas"
           description="No se encontraron reservas para el filtro seleccionado."
         />
       )}
 
-      {bookingsQuery.data?.length > 0 && (
+      {activeBookings?.length > 0 && (
         <div className="table-scroll">
           <table>
             <thead>
@@ -123,28 +135,22 @@ export function BookingsPage() {
                 <th>Título</th>
                 <th>Desde</th>
                 <th>Hasta</th>
-                <th>Estado</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {bookingsQuery.data.map((booking) => {
+              {activeBookings.map((booking) => {
                 const room = roomsQuery.data?.find((r) => r.id === booking.room)
-                const canCancel = Boolean(booking.user) && booking.status === 'confirmed'
+                const canCancel = Boolean(booking.user)
                 return (
                   <tr key={booking.id}>
                     <td>{room?.name ?? booking.room}</td>
-                    <td>{booking.title ?? 'Reservado'}</td>
+                    <td>{titleDisplay(booking.title)}</td>
                     <td>{formatDateTime(booking.start_time)}</td>
                     <td>{formatDateTime(booking.end_time)}</td>
                     <td>
-                      <Badge variant={booking.status}>
-                        {booking.status === 'confirmed' ? 'Confirmada' : 'Cancelada'}
-                      </Badge>
-                    </td>
-                    <td>
                       {canCancel && (
-                        <Button variant="danger" size="sm" onClick={() => openCancelModal(booking)}>
+                        <Button variant="danger-outline" size="sm" onClick={() => openCancelModal(booking)}>
                           Cancelar
                         </Button>
                       )}
@@ -161,7 +167,7 @@ export function BookingsPage() {
         {cancelTarget && (
           <>
             <p>
-              ¿Confirmás cancelar <strong>{cancelTarget.title ?? 'esta reserva'}</strong> (
+              ¿Confirmás cancelar <strong>{titleDisplay(cancelTarget.title)}</strong> (
               {formatDateTime(cancelTarget.start_time)} – {formatDateTime(cancelTarget.end_time)})?
             </p>
             <Alert variant="error">{cancelError}</Alert>
