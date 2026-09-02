@@ -30,3 +30,8 @@
   background: var(--closed-bg);
   color: var(--closed-text);
 }
+
+.badge-warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}

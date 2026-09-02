@@ -1,0 +1,71 @@
+.dropdown-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: var(--surface-hover);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.dropdown-menu-trigger:hover {
+  background: var(--surface-hover);
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+/* Posicionado (top/left) inline por JS: se porta a <body> con position:fixed
+   para no quedar recortado por el overflow-x:auto de contenedores como la
+   tabla de empresas, y para poder abrir hacia arriba o abajo según el
+   espacio disponible. */
+.dropdown-menu-panel {
+  position: fixed;
+  min-width: 11rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-menu-item {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dropdown-menu-item:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.dropdown-menu-item:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dropdown-menu-item-danger {
+  color: var(--danger-text);
+}
+
+.dropdown-menu-item-danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+}

@@ -1,8 +1,49 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.home-page h1 {
+  margin: 0;
+}
+
+.home-greeting-muted {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-normal);
+}
+
+.home-greeting-name {
+  color: var(--accent);
+}
+
+.home-user-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.home-user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+}
+
+.home-user-row svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.home-user-row strong {
+  color: var(--text);
+  font-weight: var(--font-weight-medium);
+}
+
 .home-quick-links {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   gap: var(--space-4);
-  margin-top: var(--space-6);
 }
 
 .home-quick-link {
@@ -12,12 +53,24 @@
 
 .home-quick-link .card {
   height: 100%;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .home-quick-link:hover .card {
-  border-color: var(--primary);
+  border-color: var(--accent);
   box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.home-quick-link-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft-bg);
+  color: var(--accent);
 }
 
 .home-quick-link h3 {
@@ -27,4 +80,11 @@
 .home-quick-link p {
   color: var(--text-muted);
   margin-bottom: 0;
+}
+
+.home-quick-fact {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--accent);
 }

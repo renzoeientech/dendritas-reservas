@@ -1,4 +1,4 @@
-import { LogOut, Menu, X } from 'lucide-react'
+import { LogOut, Menu, Waypoints, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -11,10 +11,16 @@ const NAV_ITEMS = [
   { to: '/bookings', label: 'Reservas' },
 ]
 
-function NavLinks({ onNavigate }) {
+const ROLE_NAV_ITEMS = {
+  superadmin: [{ to: '/companies', label: 'Empresas' }],
+  admin: [{ to: '/users', label: 'Usuarios' }],
+}
+
+function NavLinks({ role, onNavigate }) {
+  const items = [...NAV_ITEMS, ...(ROLE_NAV_ITEMS[role] ?? [])]
   return (
     <>
-      {NAV_ITEMS.map((item) => (
+      {items.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
@@ -43,10 +49,13 @@ export function AppShell({ children }) {
     <div className="app-shell">
       <header className="app-shell-header">
         <div className="app-shell-header-inner">
-          <span className="app-shell-brand">Dendritas Reservas</span>
+          <span className="app-shell-brand">
+            <Waypoints size={20} className="app-shell-brand-icon" aria-hidden="true" />
+            Agendritas
+          </span>
 
           <nav className="app-shell-nav" aria-label="Principal">
-            <NavLinks />
+            <NavLinks role={user.role} />
           </nav>
 
           <div className="app-shell-user">
@@ -71,7 +80,7 @@ export function AppShell({ children }) {
 
         {menuOpen && (
           <nav id="app-shell-mobile-nav" className="app-shell-nav-mobile" aria-label="Principal (mobile)">
-            <NavLinks onNavigate={() => setMenuOpen(false)} />
+            <NavLinks role={user.role} onNavigate={() => setMenuOpen(false)} />
             <div className="app-shell-user">
               <span className="app-shell-user-name">{user.first_name || user.email}</span>
               <Button variant="ghost" size="sm" onClick={handleLogout}>

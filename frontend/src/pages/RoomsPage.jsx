@@ -1,5 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
-import { Coffee, ImageOff, Pencil, Plus, Presentation, Projector, Snowflake, Tv, Users, Wifi } from 'lucide-react'
+import {
+  CalendarClock,
+  Clock,
+  Coffee,
+  ImageOff,
+  Pencil,
+  Plus,
+  Presentation,
+  Projector,
+  Snowflake,
+  Tv,
+  Users,
+  Wifi,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listRoomsRequest } from '../api/rooms'
@@ -17,6 +30,12 @@ const AMENITY_ICONS = {
   wifi: { icon: Wifi, label: 'Wifi' },
   aire_acondicionado: { icon: Snowflake, label: 'Aire acondicionado' },
   cafetera: { icon: Coffee, label: 'Cafetera' },
+}
+
+// Filtra ubicaciones vacías o que son solo puntuación/espacios (ej. "." cargado
+// como placeholder), para no mostrar el separador " · " sin nada detrás.
+function hasMeaningfulLocation(location) {
+  return Boolean(location && /[a-zA-Z0-9]/.test(location))
 }
 
 export function RoomsPage() {
@@ -81,14 +100,11 @@ export function RoomsPage() {
               </div>
 
               <div className="room-card-body">
-                <div className="room-card-title">
-                  <span className="color-dot" style={{ backgroundColor: room.color }} />
-                  <h3>{room.name}</h3>
-                </div>
+                <h3>{room.name}</h3>
                 <p className="room-card-meta">
                   <Users size={14} aria-hidden="true" /> Capacidad para {room.capacity}{' '}
                   {room.capacity === 1 ? 'persona' : 'personas'}
-                  {room.location ? ` · ${room.location}` : ''}
+                  {hasMeaningfulLocation(room.location) ? ` · ${room.location}` : ''}
                 </p>
 
                 {room.amenities?.length > 0 && (
@@ -109,9 +125,11 @@ export function RoomsPage() {
 
                 <div className="room-card-actions">
                   <Button variant="ghost" size="sm" onClick={() => navigate(`/bookings?room=${room.id}`)}>
+                    <CalendarClock size={14} aria-hidden="true" />
                     Ver reservas
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => navigate(`/rooms/${room.id}/schedule`)}>
+                    <Clock size={14} aria-hidden="true" />
                     Horario
                   </Button>
                   {canManage && (
