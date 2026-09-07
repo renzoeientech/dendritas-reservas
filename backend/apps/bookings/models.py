@@ -10,7 +10,7 @@ class Booking(models.Model):
     room = models.ForeignKey("rooms.Room", on_delete=models.PROTECT, related_name="bookings")
     user = models.ForeignKey("users.User", on_delete=models.PROTECT, related_name="bookings")
     company = models.ForeignKey("companies.Company", on_delete=models.PROTECT, related_name="bookings")
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=BookingStatus.choices, default=BookingStatus.CONFIRMED)

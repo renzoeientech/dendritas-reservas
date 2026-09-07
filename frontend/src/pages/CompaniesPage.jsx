@@ -17,7 +17,6 @@ function formatDate(value) {
 }
 
 function adminDisplay(admin) {
-  if (!admin) return 'Sin admin asignado'
   const name = [admin.first_name, admin.last_name].filter(Boolean).join(' ')
   return name ? `${name} (${admin.email})` : admin.email
 }
@@ -34,7 +33,7 @@ export function CompaniesPage() {
   const companiesQuery = useQuery({ queryKey: ['companies'], queryFn: listCompaniesRequest })
 
   const deleteAdmin = useMutation({
-    mutationFn: (companyId) => deleteCompanyAdminRequest(companyId),
+    mutationFn: ({ companyId, adminId }) => deleteCompanyAdminRequest(companyId, adminId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companies'] })
       setDeleteAdminTarget(null)
@@ -57,9 +56,9 @@ export function CompaniesPage() {
     },
   })
 
-  function openDeleteAdminModal(company) {
+  function openDeleteAdminModal(company, admin) {
     setDeleteAdminError(null)
-    setDeleteAdminTarget(company)
+    setDeleteAdminTarget({ company, admin })
   }
 
   function openDeleteCompanyModal(company) {
@@ -102,19 +101,33 @@ export function CompaniesPage() {
               {companiesQuery.data.map((company) => (
                 <tr key={company.id}>
                   <td>{company.name}</td>
-                  <td>{adminDisplay(company.admin)}</td>
+                  <td>
+                    {company.admins.length === 0 && 'Sin admin asignado'}
+                    {company.admins.length > 0 && (
+                      <ul className="companies-admin-list">
+                        {company.admins.map((admin) => (
+                          <li key={admin.id}>
+                            <span>{adminDisplay(admin)}</span>
+                            <button
+                              type="button"
+                              className="companies-admin-remove"
+                              title="Eliminar admin"
+                              aria-label={`Eliminar admin ${admin.email}`}
+                              onClick={() => openDeleteAdminModal(company, admin)}
+                            >
+                              ×
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
                   <td>{formatDate(company.created_at)}</td>
                   <td>
                     <DropdownMenu
                       items={[
                         {
-                          label: 'Eliminar admin',
-                          disabled: !company.admin,
-                          onClick: () => openDeleteAdminModal(company),
-                        },
-                        {
-                          label: 'Asignar admin',
-                          disabled: Boolean(company.admin),
+                          label: 'Agregar admin',
                           onClick: () => setAssignTarget(company),
                         },
                         {
@@ -145,7 +158,7 @@ export function CompaniesPage() {
           <>
             <p>
               ¿Confirmás eliminar a <strong>{adminDisplay(deleteAdminTarget.admin)}</strong> como admin de{' '}
-              <strong>{deleteAdminTarget.name}</strong>? La empresa quedará sin admin asignado.
+              <strong>{deleteAdminTarget.company.name}</strong>?
             </p>
             <Alert variant="error">{deleteAdminError}</Alert>
             <div className="companies-form-actions">
@@ -155,7 +168,12 @@ export function CompaniesPage() {
               <Button
                 variant="danger"
                 loading={deleteAdmin.isPending}
-                onClick={() => deleteAdmin.mutate(deleteAdminTarget.id)}
+                onClick={() =>
+                  deleteAdmin.mutate({
+                    companyId: deleteAdminTarget.company.id,
+                    adminId: deleteAdminTarget.admin.id,
+                  })
+                }
               >
                 Sí, eliminar
               </Button>

@@ -10,13 +10,13 @@ export async function createCompanyRequest(company) {
   return data
 }
 
-export async function deleteCompanyAdminRequest(companyId) {
-  const { data } = await client.delete(`/companies/${companyId}/admin/`)
+export async function deleteCompanyAdminRequest(companyId, adminId) {
+  const { data } = await client.delete(`/companies/${companyId}/admins/${adminId}/`)
   return data
 }
 
 export async function assignCompanyAdminRequest(companyId, admin) {
-  const { data } = await client.post(`/companies/${companyId}/admin/`, admin)
+  const { data } = await client.post(`/companies/${companyId}/admins/`, admin)
   return data
 }
 

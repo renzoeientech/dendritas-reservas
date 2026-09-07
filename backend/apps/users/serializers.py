@@ -7,23 +7,24 @@ from .models import Role, User
 
 
 class CompanySerializer(serializers.ModelSerializer):
-    admin = serializers.SerializerMethodField()
+    admins = serializers.SerializerMethodField()
 
     class Meta:
         model = Company
-        fields = ("id", "name", "slug", "created_at", "admin")
+        fields = ("id", "name", "slug", "created_at", "admins")
         read_only_fields = fields
 
-    def get_admin(self, obj):
-        admin = obj.users.filter(role=Role.ADMIN, is_active=True).order_by("id").first()
-        if not admin:
-            return None
-        return {
-            "id": admin.id,
-            "email": admin.email,
-            "first_name": admin.first_name,
-            "last_name": admin.last_name,
-        }
+    def get_admins(self, obj):
+        admins = obj.users.filter(role=Role.ADMIN, is_active=True).order_by("id")
+        return [
+            {
+                "id": admin.id,
+                "email": admin.email,
+                "first_name": admin.first_name,
+                "last_name": admin.last_name,
+            }
+            for admin in admins
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):

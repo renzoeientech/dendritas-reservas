@@ -50,7 +50,7 @@ export function CompanyAdminAssignModal({ open, onClose, company, onSaved }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Asignar admin">
+    <Modal open={open} onClose={onClose} title="Agregar admin">
       <form onSubmit={handleSubmit}>
         {company && (
           <p className="company-admin-assign-hint">
@@ -91,7 +91,7 @@ export function CompanyAdminAssignModal({ open, onClose, company, onSaved }) {
             Cancelar
           </Button>
           <Button type="submit" loading={assignAdmin.isPending}>
-            Asignar admin
+            Agregar admin
           </Button>
         </div>
       </form>

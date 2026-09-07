@@ -82,7 +82,7 @@ export function BookingsPage() {
 
   return (
     <div>
-      <Button variant="ghost" size="sm" className="back-button" onClick={() => navigate('/')}>
+      <Button variant="ghost" size="sm" className="back-button" onClick={() => navigate(roomFilter ? '/rooms' : '/')}>
         <ArrowLeft size={16} aria-hidden="true" />
         Volver
       </Button>
@@ -94,6 +94,7 @@ export function BookingsPage() {
         <BookingCalendar
           rooms={roomsQuery.data ?? []}
           user={user}
+          initialRoomId={roomFilter}
           onCreated={() => setSuccessMessage('Reserva creada correctamente.')}
         />
       </Card>
@@ -132,6 +133,7 @@ export function BookingsPage() {
             <thead>
               <tr>
                 <th>Sala</th>
+                <th>Empresa</th>
                 <th>Título</th>
                 <th>Desde</th>
                 <th>Hasta</th>
@@ -145,6 +147,7 @@ export function BookingsPage() {
                 return (
                   <tr key={booking.id}>
                     <td>{room?.name ?? booking.room}</td>
+                    <td>{booking.company?.name ?? '—'}</td>
                     <td>{titleDisplay(booking.title)}</td>
                     <td>{formatDateTime(booking.start_time)}</td>
                     <td>{formatDateTime(booking.end_time)}</td>

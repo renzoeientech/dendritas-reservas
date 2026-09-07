@@ -126,7 +126,7 @@ export function RoomsPage() {
                 <div className="room-card-actions">
                   <Button variant="ghost" size="sm" onClick={() => navigate(`/bookings?room=${room.id}`)}>
                     <CalendarClock size={14} aria-hidden="true" />
-                    Ver reservas
+                    Reservar
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => navigate(`/rooms/${room.id}/schedule`)}>
                     <Clock size={14} aria-hidden="true" />

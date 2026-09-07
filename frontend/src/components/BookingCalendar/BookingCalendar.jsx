@@ -59,11 +59,6 @@ function formatTime(date) {
   return date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
-// Un título de solo espacios o puntuación (ej. ".") no cuenta como completado.
-function isMeaningfulTitle(value) {
-  return Boolean(value && /[a-zA-Z0-9]/.test(value))
-}
-
 function buildMonthCells(monthDate) {
   const year = monthDate.getFullYear()
   const month = monthDate.getMonth()
@@ -80,21 +75,20 @@ function buildMonthCells(monthDate) {
   return cells
 }
 
-export function BookingCalendar({ rooms, user, onCreated }) {
+export function BookingCalendar({ rooms, user, initialRoomId, onCreated }) {
   const queryClient = useQueryClient()
   const today = useMemo(() => startOfDay(new Date()), [])
   const isSuperAdmin = user.role === 'superadmin'
   const hasOwnCompany = Boolean(user.company)
   const canBook = hasOwnCompany || isSuperAdmin
 
-  const [selectedRoomId, setSelectedRoomId] = useState('')
+  const [selectedRoomId, setSelectedRoomId] = useState(initialRoomId || '')
   const [selectedCompanyId, setSelectedCompanyId] = useState('')
   const [monthDate, setMonthDate] = useState(today)
   const [selectedDate, setSelectedDate] = useState(today)
   const [desdeMinutes, setDesdeMinutes] = useState(null)
   const [hastaMinutes, setHastaMinutes] = useState(null)
   const [title, setTitle] = useState('')
-  const [titleTouched, setTitleTouched] = useState(false)
   const [error, setError] = useState(null)
 
   if (!selectedRoomId && rooms.length > 0) {
@@ -215,7 +209,6 @@ export function BookingCalendar({ rooms, user, onCreated }) {
       setDesdeMinutes(null)
       setHastaMinutes(null)
       setTitle('')
-      setTitleTouched(false)
       setError(null)
       onCreated?.()
     },
@@ -225,10 +218,6 @@ export function BookingCalendar({ rooms, user, onCreated }) {
   })
 
   function handleReservar() {
-    if (!isMeaningfulTitle(title)) {
-      setTitleTouched(true)
-      return
-    }
     if (!selectedRoomId || !rangeStart || !rangeEnd || overlapsBooking) return
     if (isSuperAdmin && !selectedCompanyId) return
     setError(null)
@@ -249,7 +238,6 @@ export function BookingCalendar({ rooms, user, onCreated }) {
   const reservarDisabled =
     !canBook ||
     (isSuperAdmin && !selectedCompanyId) ||
-    !isMeaningfulTitle(title) ||
     !rangeStart ||
     !rangeEnd ||
     overlapsBooking ||
@@ -382,19 +370,10 @@ export function BookingCalendar({ rooms, user, onCreated }) {
                 </FormField>
               )}
 
-              <FormField
-                label="Título de la reserva"
-                hint={canBook ? 'Obligatorio para poder reservar el horario elegido.' : undefined}
-                error={
-                  canBook && titleTouched && !isMeaningfulTitle(title)
-                    ? 'Ingresá un título para poder reservar.'
-                    : undefined
-                }
-              >
+              <FormField label="Título de la reunión (opcional)">
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  onBlur={() => setTitleTouched(true)}
                   placeholder="Ej: Reunión de equipo"
                   disabled={!canBook}
                 />
